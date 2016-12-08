@@ -10,7 +10,7 @@ int main(int argc, char **argv) {
         const char *header = "";
         int nonce = 0, c;
         while ((c = getopt(argc, argv, "h:n:")) != -1) {
-                switch (c) {
+                switch (c) {    
                 case 'h':
                         header = optarg;
                         break;
@@ -19,8 +19,7 @@ int main(int argc, char **argv) {
                         break;
                 }
         }
-        printf("Verifying size %d proof for equi(\"%s\",%d)\n", PROOFSIZE,
-               header, nonce);
+        printf("Verifying size %d proof for equi(\"%s\",%d)\n", PROOFSIZE, header, nonce);
         char headernonce[HEADERNONCELEN];
         u32 hdrlen = strlen(header);
         memcpy(headernonce, header, hdrlen);

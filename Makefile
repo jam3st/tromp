@@ -5,7 +5,7 @@ GPP   = g++ -march=native -m64 -std=c++11 $(FLAGS)
 all:	equi equi1 verify test spark test1445
 
 equi:	equi.h equi_miner.h equi_miner.cpp Makefile
-	$(GPP) -DATOMIC equi_miner.cpp blake/blake2b.cpp -o equi
+	$(GPP) -ggdb equi_miner.cpp blake/blake2b.cpp -o equi
 
 equi1:	equi.h equi_miner.h equi_miner.cpp Makefile
 	$(GPP) equi_miner.cpp blake/blake2b.cpp -o equi1

@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
         int nthreads = 1;
         int nonce = 0;
         int range = 1;
-        bool showsol = false;
+        bool showsol = true;
         const char *header = "";
         const char *hex = "";
         int c;
@@ -70,9 +70,7 @@ int main(int argc, char **argv) {
         equi eq(nthreads);
         printf("Using %dMB of memory and %d-way blake2b\n",
                1 + eq.hta.alloced / 0x100000, NBLAKES);
-#ifdef ASM_BLAKE
-        printf("Using xenoncat's assembly blake code\n");
-#endif
+
         u32 sumnsols = 0;
         char headernonce[HEADERNONCELEN];
         u32 hdrlen = strlen(header);
