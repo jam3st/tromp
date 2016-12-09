@@ -1,7 +1,3 @@
-// Wagner's algorithm for Generalized Birthday Paradox, a memory-hard
-// proof-of-work
-// Copyright (c) 2016 John Tromp
-
 #include "equi_miner.h"
 #include "ctype.h"
 #include <unistd.h>
@@ -104,6 +100,12 @@ int main(int argc, char **argv) {
                                         printf(" %jx",
                                                (uintmax_t)eq.sols[nsols][i]);
                         }
+                        int pow_rc = verify(eq.sols[nsols], headernonce, sizeof(headernonce));
+                        if (pow_rc == POW_OK)
+                                printf("\n is Verified\n");
+                        else
+                                printf("FAILED due to %s\n", errstr[pow_rc]);
+
                 }
                 printf("\n%d solutions\n", nsols);
                 sumnsols += nsols;

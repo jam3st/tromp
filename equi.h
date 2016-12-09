@@ -25,11 +25,11 @@ typedef unsigned char uchar;
 #define NDIGITS (WK + 1)
 #define DIGITBITS (WN / (NDIGITS))
 
-static const u32 PROOFSIZE = 1 << WK;
-static const u32 BASE = 1 << DIGITBITS;
-static const u32 NHASHES = 2 * BASE;
-static const u32 HASHESPERBLAKE = 512 / WN;
-static const u32 HASHOUT = HASHESPERBLAKE * WN / 8;
+const static u32 PROOFSIZE = 1 << WK;
+const static u32 BASE = 1 << DIGITBITS;
+const static u32 NHASHES = 2 * BASE;
+const static u32 HASHESPERBLAKE = 512 / WN;
+const static u32 HASHOUT = HASHESPERBLAKE * WN / 8;
 
 typedef u32 proof[PROOFSIZE];
 
@@ -55,7 +55,7 @@ void setheader(blake2b_state *ctx, const char *headernonce) {
         blake2b_update(ctx, (const uchar *)headernonce, HEADERNONCELEN);
 }
 
-enum verify_code {
+enum verify_code {      
         POW_OK,
         POW_HEADER_LENGTH,
         POW_DUPLICATE,
