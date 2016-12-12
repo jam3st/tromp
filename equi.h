@@ -10,20 +10,14 @@ typedef unsigned char uchar;
 // algorithm parameters, prefixed with W (for Wagner) to reduce include file
 // conflicts
 
-#ifndef WN
-#define WN 200
-#endif
+static const u32 WN = 200u;
 
-#ifndef WK
-#define WK 9
-#endif
+static const u32 WK = 9u;
 
-#ifndef HEADERNONCELEN
-#define HEADERNONCELEN 140
-#endif
+static const u32 HEADERNONCELEN = 140u;
 
-#define NDIGITS (WK + 1)
-#define DIGITBITS (WN / (NDIGITS))
+static const u32 NDIGITS = (WK + 1); // 10
+static const u32 DIGITBITS = (WN / (NDIGITS)); // 20
 
 const static u32 PROOFSIZE = 1 << WK;
 const static u32 BASE = 1 << DIGITBITS;
@@ -74,7 +68,7 @@ void genhash(const blake2b_state *ctx, u32 idx, uchar *hash) {
         memcpy(hash, blakehash + (idx % HASHESPERBLAKE) * WN / 8, WN / 8);
 }
 
-int verifyrec(const blake2b_state *ctx, u32 *indices, uchar *hash, int r) {
+int verifyrec(const blake2b_state *ctx, u32 *indices, uchar *hash, u32 r) {
         if (r == 0) {
                 genhash(ctx, *indices, hash);
                 return POW_OK;
@@ -89,9 +83,9 @@ int verifyrec(const blake2b_state *ctx, u32 *indices, uchar *hash, int r) {
         int vrf1 = verifyrec(ctx, indices1, hash1, r - 1);
         if (vrf1 != POW_OK)
                 return vrf1;
-        for (int i = 0; i < WN / 8; i++)
+        for (u32 i = 0u; i < WN / 8; i++)
                 hash[i] = hash0[i] ^ hash1[i];
-        int i, b = r < WK ? r * DIGITBITS : WN;
+        u32 i, b = r < WK ? r * DIGITBITS : WN;
         for (i = 0; i < b / 8; i++)
                 if (hash[i])
                         return POW_NONZERO_XOR;
