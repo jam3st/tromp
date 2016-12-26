@@ -1,3 +1,5 @@
+#include "equihash.h"
+
 #include "equi_miner.h"
 #include "ctype.h"
 
@@ -12,46 +14,14 @@ static int hextobyte(const char *x) {
 }
 
 int main(int argc, char **argv) {
-        int nonce = 0;
-        bool showsol = true;
-        const char *header = "";
-        const char *hex = "";
-        equi eq;
-
-        printf("Looking for wagner-tree on (\"%s\",%d", hex ? "0x..." : header, nonce);
-        printf(") with %d %d-bit digits\n", NDIGITS, DIGITBITS);
-        printf("Using %dMB of memory\n", 1 + eq.hta.alloced / 0x100000);
-        u32 sumnsols = 0;
-        char headernonce[HEADERNONCELEN];
-        u32 hdrlen = strlen(header);
-        if (*hex) {
-                assert(strlen(hex) == 2 * HEADERNONCELEN);
-                for (u32 i = 0; i < HEADERNONCELEN; i++)
-                        headernonce[i] = hextobyte(&hex[2 * i]);
-        } else {
-                memcpy(headernonce, header, hdrlen);
-                memset(headernonce + hdrlen, 0, sizeof(headernonce) - hdrlen);
+        Gx::Blake2b::Header hdr;
+        for(auto i = 0u; i < Gx::Blake2b::HeaderLen64Bits; ++i) {
+                hdr[i] = 0ull;
         }
-        ((u32 *)headernonce)[32] = htole32(nonce);
-        eq.setheadernonce(headernonce, sizeof(headernonce));
-        eq.solve();
-        u32 nsols, maxsols = min(MAXSOLS, eq.nsols);
-        for (nsols = 0; nsols < maxsols; nsols++) {
-                if (showsol) {
-                        printf("\nSolution");
-                        for (u32 i = 0; i < PROOFSIZE; i++)
-                                printf(" %jx",
-                                        (uintmax_t)eq.sols[nsols][i]);
-                }
-                int pow_rc = verify(eq.sols[nsols], headernonce, sizeof(headernonce));
-                if (pow_rc == POW_OK)
-                        printf("\n is Verified\n");
-                else
-                        printf("FAILED due to %s\n", errstr[pow_rc]);
-
-                printf("\n%d solutions\n", nsols);
-                sumnsols += nsols;
-        }
-        printf("%d total solutions\n", sumnsols);
+        // for(auto i = 0u; i < 20u; ++i) {
+        //         hdr[i] = reinterpret_cast<Gx::uint64_t const* const>(&headernonce[1])[i];
+        // }
+        auto sols = Gx::Equihash::solve(hdr);        
+        Gx::Equihash::verifySolution(sols.sol0, hdr);
         return 0;
 }

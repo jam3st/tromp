@@ -34,6 +34,7 @@
 // In practice this works very well to avoid bucket overflow
 // and produces negligible false positives
 
+#include <iostream>
 #include "equi.h"
 #include <assert.h>
 #include <stdio.h>
@@ -115,9 +116,12 @@ union htunit {
         uchar bytes[sizeof(u32)];
 };
 
-#define WORDS(bits) ((bits + 31) / 32)
-#define HASHWORDS0 WORDS(WN - DIGITBITS + RESTBITS)
-#define HASHWORDS1 WORDS(WN - 2 * DIGITBITS + RESTBITS)
+constexpr u32 WORDS(u32 const bits) {
+         return (bits + 31u) / 32u;
+}
+
+u32 const HASHWORDS0 = WORDS(WN * 8u - DIGITBITS + RESTBITS);
+u32 const HASHWORDS1 = WORDS(WN * 8u - 2 * DIGITBITS + RESTBITS);
 
 // A slot is up to HASHWORDS0 hash units followed by a tag
 typedef htunit slot0[HASHWORDS0 + 1];
@@ -172,7 +176,7 @@ u32 min(const u32 a, const u32 b) { return a < b ? a : b; }
 
 // size (in bytes) of hash in round 0 <= r < WK
 u32 hashsize(const u32 r) {
-        const u32 hashbits = WN - (r + 1) * DIGITBITS + RESTBITS;
+        const u32 hashbits = (WN * 8) - (r + 1) * DIGITBITS + RESTBITS;
         return (hashbits + 7) / 8;
 }
 
@@ -383,6 +387,7 @@ struct equi {
                 const u32 hashbytes = hashsize(0);
                 uchar hashes[64];
                 blake_state state0 = blake_ctx; // local copy on stack can be copied faster
+                std::cerr << "Num blocks " << NBLOCKS << std::endl;
                 for (u32 block = 0; block < NBLOCKS; ++block) {
                         blake_state state = state0; // make another copy since
                                                     // blake2b_final modifies it
@@ -390,11 +395,11 @@ struct equi {
                         blake2b_update(&state, (uchar *)&leb, sizeof(u32));
                         blake2b_final(&state, hashes, HASHOUT);
                         for (u32 j = 0; j < HASHESPERBLAKE; j++) {
-                                const uchar *ph = hashes + j * WN / 8;
+                                const uchar *ph = hashes + j * WN;
                                 const u32 bucketid = ((u32)ph[0] << 4) | ph[1] >> 4;
                                 // grab next available slot in that
                                 // bucket
-                                const u32 slot = getslot0(bucketid);
+                                const u32 slot = getslot0(bucketid);    
                                 if (slot >= NSLOTS) {
                                         bfull++; // this actually never
                                                         // seems to happen in
@@ -405,7 +410,7 @@ struct equi {
                                 // location for slot's tag
                                 htunit *s = hta.heap0[bucketid][slot] + htl.nexthtunits;
                                 // hash should end right before tag
-                                memcpy(s->bytes - hashbytes, ph + WN / 8 - hashbytes, hashbytes);
+                                memcpy(s->bytes - hashbytes, ph + WN - hashbytes, hashbytes);
                                 // round 0 tags store hash-generating
                                 // index
                                 s->tag = tree(block * HASHESPERBLAKE + j);
